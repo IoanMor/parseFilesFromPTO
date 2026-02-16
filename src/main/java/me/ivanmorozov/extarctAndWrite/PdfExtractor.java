@@ -1,40 +1,102 @@
 package me.ivanmorozov.extarctAndWrite;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
 import technology.tabula.*;
+import technology.tabula.extractors.BasicExtractionAlgorithm;
 import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
 
 import java.io.*;
 import java.nio.file.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class PdfExtractor implements FileExtractInfo, FileWriteCSV {
 
+
     @Override
     public void extract(File pdfFile, Path toPath) throws IOException {
-        try (PDDocument document = PDDocument.load(pdfFile);
-             ObjectExtractor extractor = new ObjectExtractor(document);) {
+        boolean found = false;
+
+        try (PDDocument document = PDDocument.load(pdfFile); ObjectExtractor extractor = new ObjectExtractor(document)) {
             PageIterator pages = extractor.extract();
 
-            while (pages.hasNext()) {
+            while (pages.hasNext() && !found) {
                 Page page = pages.next();
 
-                // Попробовать таблицы
-                SpreadsheetExtractionAlgorithm sea = new SpreadsheetExtractionAlgorithm();
-                List<Table> tables = sea.extract(page);
+
+                BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
+                List<Table> tables = bea.extract(page);
 
                 for (Table table : tables) {
                     List<List<RectangularTextContainer>> rows = table.getRows();
 
                     for (List<RectangularTextContainer> row : rows) {
-                        if (row.size() > 0 && row.get(0).getText().trim().startsWith("Итого:")) {
+                        StringBuilder lineBuilder = new StringBuilder();
+                        for (RectangularTextContainer cell : row) {
+                            lineBuilder.append(cell.getText()).append(" ");
+                        }
+                        String line = lineBuilder.toString().trim();
+                        Pattern itogoPattern = Pattern.compile("Итого[:\\s│║]*.*");
+                        Matcher itogoMatcher = itogoPattern.matcher(line);
+                        if (line.startsWith("Итого") || line.startsWith("Итого:") || itogoMatcher.find()) {
 
-                            // Предполагаем фиксированное положение колонок
-                            String gPod = row.get(2).getText().trim();
-                            String tNar = row.get(row.size() - 1).getText().trim();
-                            write(toPath,pdfFile,gPod,tNar);
+                            Matcher matcher = Pattern.compile("\\d+\\.\\d+").matcher(line);
+                            List<String> numbers = new ArrayList<>();
+                            while (matcher.find()) {
+                                numbers.add(matcher.group());
+                            }
+
+                            if (numbers.size() >= 2) {
+                                String gPod = numbers.get(3);
+                                String tNar = numbers.get(numbers.size() - 1);
+                                write(toPath, pdfFile, gPod, tNar);
+                                found = true;
+                                System.out.println("Найдено в Tabula: " + pdfFile.getName() + " -> Gпод: " + gPod + ", Тнар: " + tNar);
+                                break;
+                            }
                         }
                     }
+                    if (found) break;
+                }
+            }
+
+            // fallback на PDFTextStripper, если Tabula не нашла
+            if (!found) {
+                System.out.println("Tabula не нашла Итого, используем PDFTextStripper для " + pdfFile.getName());
+
+                PDFTextStripper stripper = new PDFTextStripper();
+                String text = stripper.getText(document);
+                String[] lines = text.split("\\r?\\n");
+                String line = null;
+
+                for (String l : lines) {
+                    if (l.startsWith("Итого") || l.startsWith("Итого:")) {
+                        line = l;
+                        break;
+                    }
+                }
+
+                if (line != null) {
+                    Matcher matcher = Pattern.compile("\\d+\\.\\d+").matcher(line);
+                    List<String> numbers = new ArrayList<>();
+                    while (matcher.find()) {
+                        numbers.add(matcher.group());
+                    }
+
+                    if (numbers.size() >= 2) {
+                        String gPod = numbers.get(numbers.size() - 2);
+                        String tNar = numbers.get(numbers.size() - 1);
+                        write(toPath, pdfFile, gPod, tNar);
+                        System.out.println("Найдено в PDFTextStripper: " + pdfFile.getName() + " -> Gпод: " + gPod + ", Тнар: " + tNar);
+                    } else {
+                        System.err.println("Не удалось найти нужные числа в файле: " + pdfFile.getName());
+                    }
+                } else {
+                    System.err.println("Строка 'Итого' не найдена в файле: " + pdfFile.getName());
                 }
             }
         }

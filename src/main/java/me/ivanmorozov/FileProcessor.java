@@ -29,10 +29,8 @@ public class FileProcessor {
     }
 
 
-    private static final String pdfFolderPath =
-            "C:\\Users\\Морозов Иван\\Desktop\\УК ООО ЖЭК Комфорт";
-    private static final String outputCsvPath =
-            "C:\\Users\\Морозов Иван\\Desktop\\result\\result.csv";
+    private static final String pdfFolderPath = "C:\\Users\\LORD\\Downloads";
+    private static final String outputCsvPath = "C:\\Users\\LORD\\Desktop\\result\\result.csv";
 
 
     public static void main(String[] args) {
