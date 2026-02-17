@@ -4,35 +4,25 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import java.util.Arrays;
+
 /**
  * Unit test for simple App.
  */
-public class AppTest 
-    extends TestCase
+public class AppTest
 {
-    /**
-     * Create the test case
-     *
-     * @param testName name of the test case
-     */
-    public AppTest( String testName )
-    {
-        super( testName );
+    private static String getAddress(String fileName){
+        String[] strings = fileName.split("_");
+        System.out.println(Arrays.toString(strings));
+        for (int i = 0; i <strings.length ; i++) {
+            if (strings[i].equals("д.") || strings[i].equals("д"))
+            {
+                return strings[i]+strings[i+1];
+            } else continue;
+        }
+      return "Не удалось найти дом";
     }
-
-    /**
-     * @return the suite of tests being tested
-     */
-    public static Test suite()
-    {
-        return new TestSuite( AppTest.class );
-    }
-
-    /**
-     * Rigourous Test :-)
-     */
-    public void testApp()
-    {
-        assertTrue( true );
+    public static void main(String[] args) {
+        System.out.println(getAddress("Троицк_мкр_В_д_49_520159_Январь_2026_ЦО.html"));
     }
 }

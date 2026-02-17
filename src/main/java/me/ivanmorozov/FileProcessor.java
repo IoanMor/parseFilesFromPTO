@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -21,33 +22,24 @@ import java.util.stream.Stream;
 public class FileProcessor {
 
     private static final Map<String, FileExtractInfo> strategies = new HashMap<>();
-
     static
     {
         strategies.put("html", new HtmlExtract());
         strategies.put("pdf", new PdfExtractor());
     }
-
-
-    private static final String pdfFolderPath = "C:\\Users\\LORD\\Downloads";
-    private static final String outputCsvPath = "C:\\Users\\LORD\\Desktop\\result\\result.csv";
-
-
-    public static void main(String[] args) {
-
-
+    private static final String pdfFolderPath = "C:\\Users\\Морозов Иван\\Desktop\\result\\УК\\УК АО ТКС";
+    private static final String outputCsvPath = "C:\\Users\\Морозов Иван\\Desktop\\result\\result.csv";
+    public static void main(String[] args) throws IOException {
         Path path1 = Path.of(outputCsvPath);
+        Files.deleteIfExists(path1);
         try (Stream<Path> pathStream = Files.walk(Path.of(pdfFolderPath));) {
-
-
-
             Set<Path> pdfFiles = pathStream
                     .filter(path -> {
                         String name = path.toString().toLowerCase();
                         return name.endsWith(".pdf") || name.endsWith(".html");
                     })
                     .filter(path -> path.getFileName().toString().contains("ЦО"))
-                    .collect(Collectors.toSet());
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
 
             for (Path filePath : pdfFiles) {
                 System.out.println("Обработка файла: " + filePath);
@@ -61,10 +53,6 @@ public class FileProcessor {
                     e.printStackTrace();
                 }
             }
-
-
-
-
         } catch (IOException e) {
             e.printStackTrace();
         }

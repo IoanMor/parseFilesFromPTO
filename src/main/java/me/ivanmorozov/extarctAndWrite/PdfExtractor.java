@@ -14,8 +14,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class PdfExtractor implements FileExtractInfo, FileWriteCSV {
+import static me.ivanmorozov.util.UtilMethods.getAddress;
 
+public class PdfExtractor implements FileExtractInfo, FileWriteCSV {
 
     @Override
     public void extract(File pdfFile, Path toPath) throws IOException {
@@ -26,7 +27,6 @@ public class PdfExtractor implements FileExtractInfo, FileWriteCSV {
 
             while (pages.hasNext() && !found) {
                 Page page = pages.next();
-
 
                 BasicExtractionAlgorithm bea = new BasicExtractionAlgorithm();
                 List<Table> tables = bea.extract(page);
@@ -51,9 +51,10 @@ public class PdfExtractor implements FileExtractInfo, FileWriteCSV {
                             }
 
                             if (numbers.size() >= 2) {
-                                String gPod = numbers.get(3);
-                                String tNar = numbers.get(numbers.size() - 1);
-                                write(toPath, pdfFile, gPod, tNar);
+                                String gPod = numbers.get(2).replace(".",",");
+                                String tNar = numbers.get(numbers.size() - 1).replace(".",",");
+
+                                write(toPath, getAddress(pdfFile.getName()), gPod, tNar);
                                 found = true;
                                 System.out.println("Найдено в Tabula: " + pdfFile.getName() + " -> Gпод: " + gPod + ", Тнар: " + tNar);
                                 break;
@@ -64,7 +65,6 @@ public class PdfExtractor implements FileExtractInfo, FileWriteCSV {
                 }
             }
 
-            // fallback на PDFTextStripper, если Tabula не нашла
             if (!found) {
                 System.out.println("Tabula не нашла Итого, используем PDFTextStripper для " + pdfFile.getName());
 
@@ -90,7 +90,8 @@ public class PdfExtractor implements FileExtractInfo, FileWriteCSV {
                     if (numbers.size() >= 2) {
                         String gPod = numbers.get(numbers.size() - 2);
                         String tNar = numbers.get(numbers.size() - 1);
-                        write(toPath, pdfFile, gPod, tNar);
+
+                        write(toPath,getAddress(pdfFile.getName()) , gPod, tNar);
                         System.out.println("Найдено в PDFTextStripper: " + pdfFile.getName() + " -> Gпод: " + gPod + ", Тнар: " + tNar);
                     } else {
                         System.err.println("Не удалось найти нужные числа в файле: " + pdfFile.getName());
@@ -102,8 +103,9 @@ public class PdfExtractor implements FileExtractInfo, FileWriteCSV {
         }
     }
 
+
     @Override
-    public void write(Path toPath, File pdfFile, String gPod, String tNar) {
-        FileWriteCSV.super.write(toPath, pdfFile, gPod, tNar);
+    public void write(Path toPath, String address, String gPod, String tNar) {
+        FileWriteCSV.super.write(toPath, address, gPod, tNar);
     }
 }
