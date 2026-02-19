@@ -2,6 +2,7 @@ package me.ivanmorozov.extarctAndWrite;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
+import org.springframework.stereotype.Component;
 import technology.tabula.*;
 import technology.tabula.extractors.BasicExtractionAlgorithm;
 import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
@@ -16,6 +17,7 @@ import java.util.regex.Pattern;
 
 import static me.ivanmorozov.util.UtilMethods.getAddress;
 
+@Component("pdf")
 public class PdfExtractor implements FileExtractInfo, FileWriteCSV {
 
     @Override
@@ -51,7 +53,7 @@ public class PdfExtractor implements FileExtractInfo, FileWriteCSV {
                             }
 
                             if (numbers.size() >= 2) {
-                                String gPod = numbers.get(2).replace(".",",");
+                                String gPod = numbers.get(1).replace(".",",");
                                 String tNar = numbers.get(numbers.size() - 1).replace(".",",");
 
                                 write(toPath, getAddress(pdfFile.getName()), gPod, tNar);

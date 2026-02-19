@@ -5,6 +5,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
 import org.jsoup.select.Elements;
+import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,6 +13,7 @@ import java.nio.file.Path;
 
 import static me.ivanmorozov.util.UtilMethods.getAddress;
 
+@Component("html")
 public class HtmlExtract implements FileExtractInfo, FileWriteCSV {
 
 

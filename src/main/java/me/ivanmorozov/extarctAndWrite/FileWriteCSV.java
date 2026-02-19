@@ -4,6 +4,8 @@ import com.opencsv.CSVWriter;
 
 import java.io.File;
 import java.io.Writer;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,8 +18,7 @@ public interface FileWriteCSV {
                 toPath,
                 StandardCharsets.UTF_8,
                 StandardOpenOption.CREATE,
-                StandardOpenOption.APPEND))
-        {
+                StandardOpenOption.APPEND)) {
             CSVWriter csvWriter = new CSVWriter(
                     writer,
                     ';',
@@ -25,12 +26,18 @@ public interface FileWriteCSV {
                     CSVWriter.DEFAULT_ESCAPE_CHARACTER,
                     CSVWriter.DEFAULT_LINE_END
             );
+
             boolean needHeader = !Files.exists(toPath) || Files.size(toPath) == 0;
             if (needHeader) {
                 writer.write('\uFEFF');
-                csvWriter.writeNext(new String[]{"Имя файла", "Gпод", "Тнар"});
+                csvWriter.writeNext(new String[]{"Имя файла", "Gпод", "Тнар", "Расход мгн. т/ч"});
             }
-            csvWriter.writeNext(new String[]{address, gPod, tNar});
+            String cleanGPod = gPod.trim().replace(',', '.').replaceAll("\\s+", "");
+            String cleanTNar = tNar.trim().replace(',', '.').replaceAll("\\s+", "");
+            BigDecimal res = new BigDecimal(cleanGPod).divide(new BigDecimal(cleanTNar), 2, RoundingMode.HALF_UP);
+            String resStr = res.toString().replace(".",",");
+
+            csvWriter.writeNext(new String[]{address, gPod, tNar, resStr});
             csvWriter.flush();
 
             System.out.println("Добавлено: " + address
