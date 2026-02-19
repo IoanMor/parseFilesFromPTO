@@ -22,9 +22,6 @@ import static me.ivanmorozov.util.UtilMethods.getExtension;
 @Slf4j
 public class FileProcessor {
     private final Map<String, FileExtractInfo> strategies;
-
-    private boolean FLAG;
-
     public void process(Path folderPathFromRead) throws IOException {
         Path resultPath = folderPathFromRead.resolve("result.csv");
         Files.deleteIfExists(resultPath);
@@ -34,7 +31,8 @@ public class FileProcessor {
             Set<Path> pdfFiles = pathStream
                     .filter(path -> {
                         String name = path.toString().toLowerCase();
-                        return name.endsWith(".pdf") || name.endsWith(".html");
+                        return name.endsWith(".pdf") || name.endsWith(".html") ||
+                                name.endsWith(".xls") || name.endsWith(".xlsx");
                     })
                     .filter(path -> path.getFileName().toString().contains("ЦО"))
                     .collect(Collectors.toCollection(LinkedHashSet::new));

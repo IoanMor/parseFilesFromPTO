@@ -18,8 +18,8 @@ public class HtmlExtract implements FileExtractInfo, FileWriteCSV {
 
 
     @Override
-    public void extract(File pdfFile, Path toPath) throws IOException {
-        Document document = Jsoup.parse(pdfFile, "UTF-8");
+    public void extract(File file, Path toPath) throws IOException {
+        Document document = Jsoup.parse(file, "UTF-8");
         Element scriptElement = document.selectFirst("script#AVProtocol");
 
         if (scriptElement == null) {
@@ -37,8 +37,8 @@ public class HtmlExtract implements FileExtractInfo, FileWriteCSV {
             String tnarValue = recordsSum.selectFirst("Tnar") != null ?
                     recordsSum.selectFirst("Tnar").text().replace(".",",") : "Не найдено";
 
-            write(toPath,getAddress(pdfFile.getName()),g1Value,tnarValue);
-            System.out.println("Добавлено " + getAddress(pdfFile.getName() + " | "+g1Value+" | "+tnarValue ));
+            write(toPath,getAddress(file.getName()),g1Value,tnarValue);
+            System.out.println("Добавлено " + getAddress(file.getName() + " | "+g1Value+" | "+tnarValue ));
 
         } else {
             System.err.println("RECORDS_SUM не найден в XML");

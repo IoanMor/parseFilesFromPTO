@@ -21,10 +21,10 @@ import static me.ivanmorozov.util.UtilMethods.getAddress;
 public class PdfExtractor implements FileExtractInfo, FileWriteCSV {
 
     @Override
-    public void extract(File pdfFile, Path toPath) throws IOException {
+    public void extract(File file, Path toPath) throws IOException {
         boolean found = false;
 
-        try (PDDocument document = PDDocument.load(pdfFile); ObjectExtractor extractor = new ObjectExtractor(document)) {
+        try (PDDocument document = PDDocument.load(file); ObjectExtractor extractor = new ObjectExtractor(document)) {
             PageIterator pages = extractor.extract();
 
             while (pages.hasNext() && !found) {
@@ -53,12 +53,12 @@ public class PdfExtractor implements FileExtractInfo, FileWriteCSV {
                             }
 
                             if (numbers.size() >= 2) {
-                                String gPod = numbers.get(1).replace(".",",");
-                                String tNar = numbers.get(numbers.size() - 1).replace(".",",");
+                                String gPod = numbers.get(1).replace(".",","); // указатель
+                                String tNar = numbers.get(numbers.size() - 1).replace(".",",");// указатель
 
-                                write(toPath, getAddress(pdfFile.getName()), gPod, tNar);
+                                write(toPath, getAddress(file.getName()), gPod, tNar);
                                 found = true;
-                                System.out.println("Найдено в Tabula: " + pdfFile.getName() + " -> Gпод: " + gPod + ", Тнар: " + tNar);
+                                System.out.println("Найдено в Tabula: " + file.getName() + " -> Gпод: " + gPod + ", Тнар: " + tNar);
                                 break;
                             }
                         }
@@ -68,7 +68,7 @@ public class PdfExtractor implements FileExtractInfo, FileWriteCSV {
             }
 
             if (!found) {
-                System.out.println("Tabula не нашла Итого, используем PDFTextStripper для " + pdfFile.getName());
+                System.out.println("Tabula не нашла Итого, используем PDFTextStripper для " + file.getName());
 
                 PDFTextStripper stripper = new PDFTextStripper();
                 String text = stripper.getText(document);
@@ -90,16 +90,16 @@ public class PdfExtractor implements FileExtractInfo, FileWriteCSV {
                     }
 
                     if (numbers.size() >= 2) {
-                        String gPod = numbers.get(numbers.size() - 2);
-                        String tNar = numbers.get(numbers.size() - 1);
+                        String gPod = numbers.get(numbers.size() - 2);// указатель
+                        String tNar = numbers.get(numbers.size() - 1);// указатель
 
-                        write(toPath,getAddress(pdfFile.getName()) , gPod, tNar);
-                        System.out.println("Найдено в PDFTextStripper: " + pdfFile.getName() + " -> Gпод: " + gPod + ", Тнар: " + tNar);
+                        write(toPath,getAddress(file.getName()) , gPod, tNar);
+                        System.out.println("Найдено в PDFTextStripper: " + file.getName() + " -> Gпод: " + gPod + ", Тнар: " + tNar);
                     } else {
-                        System.err.println("Не удалось найти нужные числа в файле: " + pdfFile.getName());
+                        System.err.println("Не удалось найти нужные числа в файле: " + file.getName());
                     }
                 } else {
-                    System.err.println("Строка 'Итого' не найдена в файле: " + pdfFile.getName());
+                    System.err.println("Строка 'Итого' не найдена в файле: " + file.getName());
                 }
             }
         }

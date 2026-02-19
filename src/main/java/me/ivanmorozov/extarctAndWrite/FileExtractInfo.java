@@ -5,5 +5,5 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 public interface FileExtractInfo {
-    public void extract(File pdfFile, Path toPath) throws IOException;
+    public void extract(File file, Path toPath) throws IOException;
 }
